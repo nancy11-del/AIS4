@@ -1,63 +1,15 @@
-name: Deploy to GitHub Pages
+name: Deploy static site to GitHub Pages
 
-# تحديد متى يتم تشغيل هذا السير العمل
 on:
   push:
-    branches:
-      # قم بتغيير 'main' إلى الفرع الرئيسي لمشروعك إذا كان مختلفاً (مثل 'master')
-      - main
-  # يسمح لك بالتشغيل اليدوي من تبويب Actions
-  workflow_dispatch:
-
-# تحديد الأذونات المطلوبة للنشر
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# إعداد بيئة النشر
-concurrency:
-  cancel-in-progress: true
-  group: ${{ github.workflow }}-${{ github.ref }}
+    branches: [ "main" ]
 
 jobs:
-  # المهمة الأولى: بناء المشروع (build)
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      # إعداد بيئة Node.js (يمكنك تغيير الإصدار 18.x)
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-          cache: 'npm' # يمكن تغييرها إلى 'yarn' أو 'pnpm' حسب مدير الحزم المستخدم
-
-      - name: Install dependencies
-        run: npm install
-
-      # أمر بناء المشروع الفعلي (غيّري هذا الأمر حسب مشروعك، فمثلاً في React هو npm run build)
-      - name: Build project
-        run: npm run build
-      
-      # رفع ناتج البناء (artifact) ليتم استخدامه في مهمة النشر التالية
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # المسار إلى مجلد ناتج البناء (مثلاً: 'dist' أو 'build' أو 'public')
-          path: ./dist
-
-  # المهمة الثانية: النشر (deploy)
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    # تأكد من أن مهمة النشر تعتمد على مهمة البناء
-    needs: build 
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v3
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./
+      - uses: actions/deploy-pages@v2
